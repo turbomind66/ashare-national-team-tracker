@@ -1,0 +1,42 @@
+name: pages-redirect
+
+# 用途：本仓库只是「旧地址跳转页」，项目本体已移至 turbomind66/invest-radar。
+# GitHub Pages 域名跟随仓库名，仓库更名后旧地址会 404，故保留本仓库并用 Actions 发布一个跳转页。
+# 首次运行由 actions/configure-pages 的 enablement 自动启用 Pages（API token 无 pages 权限时的手动兜底）。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 启用并配置 Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: 打包站点
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: 发布
+        id: deployment
+        uses: actions/deploy-pages@v4
